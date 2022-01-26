@@ -1,0 +1,35 @@
+{
+  "name": "cosmos-client-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "dev": "nodemon -x ts-node index.ts",
+    "run": "node index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/preset-env": "^7.16.11",
+    "@cosmjs/json-rpc": "^0.27.0",
+    "@cosmjs/math": "^0.27.0",
+    "@cosmjs/proto-signing": "^0.27.0",
+    "@cosmjs/stargate": "^0.27.0",
+    "@cosmos-client/core": "^0.44.4",
+    "@types/node": "^10.12.18",
+    "cosmos-client": "../cosmos-client-ts/dist",
+    "minimist": "^1.2.5",
+    "ts-node-dev": "^1.1.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.12",
+    "@babel/preset-typescript": "^7.16.7",
+    "@types/jest": "^27.4.0",
+    "babel-jest": "^27.4.6",
+    "jest": "^27.4.7",
+    "nodemo": "^1.0.0",
+    "ts-node": "^10.4.0"
+  }
+}
