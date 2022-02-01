@@ -7,7 +7,12 @@ import {
 
 import { cosmosclient, rest, proto } from 'cosmos-client';
 import { setBech32NetworkPrefix } from 'cosmos-client/esm/types/address/config'
+import { HdPath, stringToPath } from "@cosmjs/crypto";
 import { AccAddress } from 'cosmos-client/cjs/types';
+import { cwd } from "process";
+
+const { SecretClient } = require("@azure/keyvault-secrets");
+const { DefaultAzureCredential } = require("@azure/identity");
 
 let minimist = require('minimist')
 
@@ -17,7 +22,8 @@ interface IChainConfiguration{
   networkName : string,
   tokenDenom : string,
   rpcEndpoint : string,
-  restEndpoint : string
+  restEndpoint : string,
+  customDerivationPath? : string
 }
 
 const chainConfigs = require('./chainConfigs.json') as IChainConfiguration[];
@@ -25,8 +31,9 @@ const chainConfigs = require('./chainConfigs.json') as IChainConfiguration[];
 interface IAppParameters{
   _ : any[],
   chainNames : string,
-  mnemonic : string,
-  verifyWithWalletAddress? : string,
+  mnemonic? : string,
+  keyVaultName? : string,
+  keyVaultSecretName? : string,
   claimRewards : boolean,
   stakeAvailableBalance : boolean,
   leaveMinimumBalance : number
@@ -39,22 +46,28 @@ interface IClientInfos {
 }
 
 async function main(){
-  const parameters = GetAndVerifyParameters();
-
-  const chainNames = parameters.chainNames.split(',');
-  for( let chainName of chainNames ){
-    const filteredConfigs = chainConfigs.filter( (c : IChainConfiguration) => c.chainName == chainName );
-    if(filteredConfigs === undefined || filteredConfigs.length == 0)
-    {
-      console.log(`\nCould not find configuration for chain by given name '${chainName}'! Continuing...`);
-      continue;
+  try{
+    const parameters = await GetAndVerifyParameters();
+    const chainNames = parameters.chainNames.split(',');
+    for( let chainName of chainNames ){
+      const filteredConfigs = chainConfigs.filter( (c : IChainConfiguration) => c.chainName == chainName );
+      if(filteredConfigs === undefined || filteredConfigs.length == 0)
+      {
+        console.log(`\nCould not find configuration for chain by given name '${chainName}'! Continuing...`);
+        continue;
+      }
+      
+      const config = filteredConfigs[0];
+  
+      const clients = await InitClients( config, parameters );
+      await ClaimRewards(config, clients, parameters);
+      await StakeBalance(config, clients, parameters);
     }
-    
-    const config = filteredConfigs[0];
-
-    const clients = await InitClients( config, parameters );
-    await ClaimRewards(config, clients, parameters);
-    await StakeBalance(config, clients, parameters);
+  } catch( error : any ) {
+    if(error.message !== undefined)
+      console.error(error.message);
+    else
+      console.error( error );
   }
 }
 
@@ -65,11 +78,9 @@ function setFromFromEnv( args: any, memberName: string, varName: string ){
   }
 }
 
-function GetAndVerifyParameters() : IAppParameters{
-// console.log(process.argv)
-
+async function GetAndVerifyParameters() : Promise<IAppParameters>{
   var args = minimist(process.argv.slice(2), {
-    string: [ 'chainNames', 'mnemonic', 'verifyWithWalletAddress', 'leaveMinimumBalance' ],
+    string: [ 'chainNames', 'mnemonic', 'keyVaultName', 'keyVaultSecretName', 'leaveMinimumBalance' ],
     boolean: [ 'claimRewards', 'stakeAvailableBalance' ],
     //alias: { h: 'help', v: 'version' },
     default: { 
@@ -86,28 +97,40 @@ function GetAndVerifyParameters() : IAppParameters{
 
   setFromFromEnv( args, "chainNames", "STAKEBOT_CHAIN_NAMES");
   setFromFromEnv( args, "mnemonic", "STAKEBOT_MNEMONIC");
+  setFromFromEnv( args, "keyVaultName", "STAKEBOT_KEY_VAULT_NAME");
+  setFromFromEnv( args, "keyVaultSecretName", "STAKEBOT_KEY_VAULT_SECRET_NAME");
   setFromFromEnv( args, "claimRewards", "STAKEBOT_CLAIM_REWARDS" );
   setFromFromEnv( args, "stakeAvailableBalance", "STAKEBOT_STAKE_AVAILABLE_BALANCE" );
   setFromFromEnv( args, "leaveMinimumBalance", "STAKEBOT_LEAVE_MINIMUM_BALANCE");
-  setFromFromEnv( args, "verifyWithWalletAddress", "STAKEBOT_VERIFY_WITH_WALLET_ADDRESS");
 
   const params = args as IAppParameters;
-  // console.log(params);
 
   if(params.chainNames === undefined ){
-    throw new Error(`Missing application argument 'chainNames' or environment variable STAKEBOT_CHAIN_NAMES`);
+    throw new Error(`Missing application argument 'chainNames' (comma-separated string or names) or environment variable STAKEBOT_CHAIN_NAMES`);
   }
 
-  if(params.mnemonic === undefined ){
-    throw new Error(`Missing application argument 'mnemonic' or environment variable STAKEBOT_MNEMONIC`);
+  if(params.mnemonic === undefined && ( params.keyVaultName === undefined || params.keyVaultSecretName === undefined ) ){
+    throw new Error(`Application requires mnemonic for your wallet. Either\n1. Supply it directly using the 'mnemonic' CLI parameter or environment variable STAKEBOT_MNEMONIC\n2. Fetch it from Azure Key Vault by defining CLI parameters 'keyVaultName' + 'keyVaultSecretName' or environment variables STAKEBOT_KEYVAULT_NAME + STAKEBOT_KEY_VAULT_SECRET_NAME in conjunction with environment variables AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET.`);
+  }
+
+  if( params.keyVaultName !== undefined && params.keyVaultSecretName !== undefined){
+    console.log("Loading mnemonic from Azure Key Vault");
+    const credential = new DefaultAzureCredential();
+
+    const url = `https://${params.keyVaultName}.vault.azure.net`;
+    const client = new SecretClient(url, credential);
+
+    const response = await client.getSecret(params.keyVaultSecretName);
+    params.mnemonic = response.value;
   }
 
   return params;
 }
 
 async function InitClients( config : IChainConfiguration, params : IAppParameters ) : Promise<IClientInfos> {
-  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(params.mnemonic, { prefix: config.walletPrefix });
+  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(params.mnemonic, { prefix: config.walletPrefix, hdPaths: config.customDerivationPath ? [stringToPath(config.customDerivationPath)] : undefined });
   const [account] = await wallet.getAccounts();
+console.log(account.address);
 
   setBech32NetworkPrefix( config.walletPrefix );
 
@@ -124,11 +147,6 @@ async function InitClients( config : IChainConfiguration, params : IAppParameter
   const address = cosmosclient.AccAddress.fromPublicKey(pubKey);
 
   console.log( `\nUsing wallet address ${address.toString()}`)
-
-  if( params.verifyWithWalletAddress !== undefined && 
-    params.verifyWithWalletAddress != address.toString()) {
-      throw new Error(`Wallet address generated from mnemonic does not match the expected verification\nExpected\t${params.verifyWithWalletAddress}\nGot\t\t${address.toString()}`);
-    }
 
   return {rest:restClient, rpc: rpcClient, restAddress: address };
 }

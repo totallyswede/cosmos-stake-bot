@@ -12,6 +12,8 @@
   "author": "Totally Swede",
   "license": "ISC",
   "dependencies": {
+    "@azure/identity": "^2.0.1",
+    "@azure/keyvault-secrets": "^4.3.0",
     "@babel/preset-env": "^7.16.11",
     "@cosmjs/json-rpc": "^0.27.0",
     "@cosmjs/math": "^0.27.0",

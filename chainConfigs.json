@@ -1,5 +1,13 @@
 [
     {
+        "chainName" : "Cosmos",
+        "walletPrefix" : "cosmos", 
+        "networkName" : "cosmoshub-4", 
+        "tokenDenom" : "uatom",
+        "rpcEndpoint" : "https://cosmoshub.validator.network", 
+        "restEndpoint" : "https://api.cosmos.network"
+    },
+    {
         "chainName" : "Osmosis",
         "walletPrefix" : "osmo", 
         "networkName" : "osmosis-1", 
@@ -38,5 +46,22 @@
         "tokenDenom" : "ulum",
         "rpcEndpoint" : "https://node0.mainnet.lum.network/rpc",
         "restEndpoint" : "https://node0.mainnet.lum.network/rest"
+    },
+    {
+        "chainName" : "Like",
+        "walletPrefix" : "cosmos",
+        "networkName" : "likecoin-mainnet-2",
+        "tokenDenom" : "ulike",
+        "rpcEndpoint" : "https://mainnet-node.like.co/rpc",
+        "restEndpoint" : "https://mainnet-node.like.co"
+    },
+    {
+        "chainName" : "Desmos",
+        "walletPrefix" : "desmos",
+        "networkName" : "desmos-mainnet",
+        "tokenDenom" : "udsm",
+        "rpcEndpoint" : "https://rpc.mainnet.desmos.network",
+        "restEndpoint" : "https://api.mainnet.desmos.network",
+        "customDerivationPath" : "m/44'/852'/0'/0/0"
     }
 ]
