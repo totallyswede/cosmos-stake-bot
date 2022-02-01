@@ -9,7 +9,7 @@
     "run": "node index.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Totally Swede",
   "license": "ISC",
   "dependencies": {
     "@babel/preset-env": "^7.16.11",
@@ -17,9 +17,8 @@
     "@cosmjs/math": "^0.27.0",
     "@cosmjs/proto-signing": "^0.27.0",
     "@cosmjs/stargate": "^0.27.0",
-    "@cosmos-client/core": "^0.44.4",
     "@types/node": "^10.12.18",
-    "cosmos-client": "../cosmos-client-ts/dist",
+    "cosmos-client": "https://gitpkg.now.sh/totallyswede/cosmos-client-ts/dist?main",
     "minimist": "^1.2.5",
     "ts-node-dev": "^1.1.8"
   },

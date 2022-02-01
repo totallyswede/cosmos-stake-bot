@@ -1,18 +1,13 @@
-import {SimpleMessagingConnection, JsonRpcClient, JsonRpcRequest} from '@cosmjs/json-rpc';
 import { DirectSecp256k1HdWallet, Registry } from "@cosmjs/proto-signing";
 import {
   SigningStargateClient,
   StargateClient,
   coin
 } from "@cosmjs/stargate";
-import assertIsBroadcastTxSuccess from "@cosmjs/stargate";
 
 import { cosmosclient, rest, proto } from 'cosmos-client';
 import { setBech32NetworkPrefix } from 'cosmos-client/esm/types/address/config'
-import { DistributionExtension } from "@cosmjs/stargate/build/queries/distribution";
-import { Configuration } from 'cosmos-client/cjs/openapi/configuration';
 import { AccAddress } from 'cosmos-client/cjs/types';
-import { isPluginRequired } from '@babel/preset-env';
 
 let minimist = require('minimist')
 
@@ -65,7 +60,7 @@ function GetAndVerifyParameters() : IAppParameters{
       restEndpoint: 'https://lcd-osmosis.blockapsis.com', 
       claimRewards: false, 
       stakeAvailableBalance: false, 
-      leaveMinimumBalance: '1' 
+      leaveMinimumBalance: 500000 
     },
     '--': false,
     stopEarly: true, /* populate _ with first non-option */
@@ -89,7 +84,7 @@ function GetAndVerifyParameters() : IAppParameters{
   // console.log(params);
 
   if(params.mnemonic === undefined ){
-    throw new Error(`Missing applicaiton argument: claimRewards`);
+    throw new Error(`Missing application argument 'mnemonic' or environment variable STAKEBOT_MNEMONIC`);
   }
 
   return params;
@@ -114,6 +109,11 @@ async function InitClients( params : IAppParameters ) : Promise<IClientInfos> {
   const address = cosmosclient.AccAddress.fromPublicKey(pubKey);
 
   console.log( `Using wallet address ${address.toString()}`)
+
+  if( params.verifyWithWalletAddress !== undefined && 
+    params.verifyWithWalletAddress != address.toString()) {
+      throw new Error(`Wallet address generated from mnemonic does not match the expected verification\nExpected\t${params.verifyWithWalletAddress}\nGot\t\t${address.toString()}`);
+    }
 
   return {rest:restClient, rpc: rpcClient, restAddress: address };
 }
@@ -150,7 +150,7 @@ async function ClaimRewards( clients : IClientInfos, params: IAppParameters ) {
 
           console.log(`${validatorAddress}\nReward: ${rewardAmount} ${rewardDenom}`);
 
-          if( parseInt(rewardAmount) > 1000*1000) {
+          if( parseInt(rewardAmount) > 1000000) {
               const withdrawResult = await clients.rpc.withdrawRewards( clients.restAddress.toString(), validatorAddress, fee );
               console.log("Withdraw result:\n" + JSON.stringify(withdrawResult));
               var obj = JSON.parse((withdrawResult.rawLog as string).slice(1,-1));
@@ -186,11 +186,16 @@ async function StakeBalance( clients : IClientInfos, params: IAppParameters ) {
   const validatorWithLeastStaked = orderedDelegations[0];
   const currentAccountBalance = await clients.rpc.getBalance( clients.restAddress.toString(), params.tokenDenom);
   const currentAccountBalanceValue = parseInt(currentAccountBalance?.amount ?? "0");
-  if( currentAccountBalanceValue / 1000000 > 2 )
+  if( currentAccountBalanceValue > params.leaveMinimumBalance * 2 )
   {
-      console.log(`Balance high enough to stake: ${currentAccountBalanceValue / 1000000}`);
-      const delegateResult = await clients.rpc.delegateTokens(clients.restAddress.toString(), validatorWithLeastStaked.delegation?.validator_address, coin( (1 * 1000000).toString(), params.tokenDenom ), GenerateFee(params) );
-      console.log(JSON.stringify(delegateResult));
+      console.log(`Balance high enough to stake: ${currentAccountBalanceValue / 1000000} / ${params.leaveMinimumBalance * 2 / 1000000}`);
+      const balanceToStake = currentAccountBalanceValue - params.leaveMinimumBalance;
+      const delegateResult = await clients.rpc.delegateTokens(clients.restAddress.toString(), validatorWithLeastStaked.delegation?.validator_address, coin( balanceToStake.toString(), params.tokenDenom ), GenerateFee(params) );
+      console.log(`Successfully staked ${balanceToStake} ${params.tokenDenom}`);
+      // console.log(JSON.stringify(delegateResult));
+  }
+  else{
+    console.log( `Account balance ${currentAccountBalanceValue / 1000000} is too low. Won't stake.`)
   }
 }
 
