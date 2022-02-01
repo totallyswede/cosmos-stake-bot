@@ -64,4 +64,4 @@ Push it
 
 `docker push myrepo.io/cosmos-stake-bot`
 
-Use the image in whatever means you find best for you. 
+Use the image in whatever means you find best for you. The Dockerfile assumes you will feed the application the information it needs via environment variables. 
