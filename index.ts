@@ -11,14 +11,21 @@ import { AccAddress } from 'cosmos-client/cjs/types';
 
 let minimist = require('minimist')
 
-interface IAppParameters{
-  _ : any[],
-  mnemonic : string,
+interface IChainConfiguration{
+  chainName : string,
   walletPrefix : string,
   networkName : string,
   tokenDenom : string,
   rpcEndpoint : string,
-  restEndpoint : string,
+  restEndpoint : string
+}
+
+const chainConfigs = require('./chainConfigs.json') as IChainConfiguration[];
+
+interface IAppParameters{
+  _ : any[],
+  chainNames : string,
+  mnemonic : string,
   verifyWithWalletAddress? : string,
   claimRewards : boolean,
   stakeAvailableBalance : boolean,
@@ -33,9 +40,22 @@ interface IClientInfos {
 
 async function main(){
   const parameters = GetAndVerifyParameters();
-  const clients = await InitClients( parameters );
-  await ClaimRewards(clients, parameters);
-  await StakeBalance(clients, parameters);
+
+  const chainNames = parameters.chainNames.split(',');
+  for( let chainName of chainNames ){
+    const filteredConfigs = chainConfigs.filter( (c : IChainConfiguration) => c.chainName == chainName );
+    if(filteredConfigs === undefined || filteredConfigs.length == 0)
+    {
+      console.log(`\nCould not find configuration for chain by given name '${chainName}'! Continuing...`);
+      continue;
+    }
+    
+    const config = filteredConfigs[0];
+
+    const clients = await InitClients( config, parameters );
+    await ClaimRewards(config, clients, parameters);
+    await StakeBalance(config, clients, parameters);
+  }
 }
 
 function setFromFromEnv( args: any, memberName: string, varName: string ){
@@ -49,15 +69,10 @@ function GetAndVerifyParameters() : IAppParameters{
 // console.log(process.argv)
 
   var args = minimist(process.argv.slice(2), {
-    string: [ 'mnemonic', 'walletPrefix', 'networkName', "tokenDenom", 'rpcEndpoint', 'restEndpoint', 'verifyWithWalletAddress', 'leaveMinimumBalance' ],
+    string: [ 'chainNames', 'mnemonic', 'verifyWithWalletAddress', 'leaveMinimumBalance' ],
     boolean: [ 'claimRewards', 'stakeAvailableBalance' ],
     //alias: { h: 'help', v: 'version' },
     default: { 
-      walletPrefix: "osmo", 
-      networkName: 'osmosis-1', 
-      tokenDenom: 'uosmo',
-      rpcEndpoint: 'https://rpc-osmosis.blockapsis.com', 
-      restEndpoint: 'https://lcd-osmosis.blockapsis.com', 
       claimRewards: false, 
       stakeAvailableBalance: false, 
       leaveMinimumBalance: 500000 
@@ -69,12 +84,8 @@ function GetAndVerifyParameters() : IAppParameters{
     }
   });
 
+  setFromFromEnv( args, "chainNames", "STAKEBOT_CHAIN_NAMES");
   setFromFromEnv( args, "mnemonic", "STAKEBOT_MNEMONIC");
-  setFromFromEnv( args, "walletPrefix", "STAKEBOT_WALLET_PREFIX");
-  setFromFromEnv( args, "networkName", "STAKEBOT_NETWORK_NAME");
-  setFromFromEnv( args, "tokenDenom", "STAKEBOT_TOKEN_DENOM");
-  setFromFromEnv( args, "rpcEndpoint", "STAKEBOT_RPC_ENDPOINT");
-  setFromFromEnv( args, "restEndpoint", "STAKEBOT_REST_ENDPOINT");
   setFromFromEnv( args, "claimRewards", "STAKEBOT_CLAIM_REWARDS" );
   setFromFromEnv( args, "stakeAvailableBalance", "STAKEBOT_STAKE_AVAILABLE_BALANCE" );
   setFromFromEnv( args, "leaveMinimumBalance", "STAKEBOT_LEAVE_MINIMUM_BALANCE");
@@ -83,6 +94,10 @@ function GetAndVerifyParameters() : IAppParameters{
   const params = args as IAppParameters;
   // console.log(params);
 
+  if(params.chainNames === undefined ){
+    throw new Error(`Missing application argument 'chainNames' or environment variable STAKEBOT_CHAIN_NAMES`);
+  }
+
   if(params.mnemonic === undefined ){
     throw new Error(`Missing application argument 'mnemonic' or environment variable STAKEBOT_MNEMONIC`);
   }
@@ -90,17 +105,17 @@ function GetAndVerifyParameters() : IAppParameters{
   return params;
 }
 
-async function InitClients( params : IAppParameters ) : Promise<IClientInfos> {
-  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(params.mnemonic, { prefix: params.walletPrefix });
+async function InitClients( config : IChainConfiguration, params : IAppParameters ) : Promise<IClientInfos> {
+  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(params.mnemonic, { prefix: config.walletPrefix });
   const [account] = await wallet.getAccounts();
 
-  setBech32NetworkPrefix( params.walletPrefix );
+  setBech32NetworkPrefix( config.walletPrefix );
 
   const rpcClient = await SigningStargateClient.connectWithSigner(
-      params.rpcEndpoint,
+    config.rpcEndpoint,
       wallet
   );
-  const restClient = new cosmosclient.CosmosSDK(params.restEndpoint, params.networkName );
+  const restClient = new cosmosclient.CosmosSDK(config.restEndpoint, config.networkName );
   
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
       key: await cosmosclient.generatePrivKeyFromMnemonic(params.mnemonic),
@@ -108,7 +123,7 @@ async function InitClients( params : IAppParameters ) : Promise<IClientInfos> {
   const pubKey = privKey.pubKey();
   const address = cosmosclient.AccAddress.fromPublicKey(pubKey);
 
-  console.log( `Using wallet address ${address.toString()}`)
+  console.log( `\nUsing wallet address ${address.toString()}`)
 
   if( params.verifyWithWalletAddress !== undefined && 
     params.verifyWithWalletAddress != address.toString()) {
@@ -118,7 +133,7 @@ async function InitClients( params : IAppParameters ) : Promise<IClientInfos> {
   return {rest:restClient, rpc: rpcClient, restAddress: address };
 }
 
-async function ClaimRewards( clients : IClientInfos, params: IAppParameters ) {
+async function ClaimRewards( config : IChainConfiguration, clients : IClientInfos, params: IAppParameters ) {
   let totalRewards = await rest.distribution
       .delegationTotalRewards(clients.rest, clients.restAddress )
       .then( res => res.data );
@@ -127,10 +142,10 @@ async function ClaimRewards( clients : IClientInfos, params: IAppParameters ) {
     totalRewards.rewards.length > 0 && 
     totalRewards?.total?.length !== undefined &&
     totalRewards.total.length > 0 ) {
-      console.log(`Total rewards: ${totalRewards?.total[0].amount} ${totalRewards.total[0].denom}`);
+      console.log(`Total rewards awaiting claim: ${totalRewards?.total[0].amount} ${totalRewards.total[0].denom}`);
 
     if(params.claimRewards) {
-        const fee = GenerateFee(params);
+        const fee = GenerateFee(config);
 
         for( let delegationRewards of totalRewards.rewards ) {
 
@@ -148,11 +163,11 @@ async function ClaimRewards( clients : IClientInfos, params: IAppParameters ) {
             continue;
           }
 
-          console.log(`${validatorAddress}\nReward: ${rewardAmount} ${rewardDenom}`);
+          console.log(`Rewards from\nValidator: ${validatorAddress}\nValue: ${rewardAmount} ${rewardDenom}`);
 
           if( parseInt(rewardAmount) > 1000000) {
               const withdrawResult = await clients.rpc.withdrawRewards( clients.restAddress.toString(), validatorAddress, fee );
-              console.log("Withdraw result:\n" + JSON.stringify(withdrawResult));
+              // console.log("Withdraw result:\n" + JSON.stringify(withdrawResult));
               var obj = JSON.parse((withdrawResult.rawLog as string).slice(1,-1));
               const claimedAmount = obj.events.filter( (e : any) => e.type == "withdraw_rewards")[0].attributes.filter( (a : any) => a.key == "amount" )[0].value
               console.log( "Claimed " + claimedAmount );
@@ -167,11 +182,9 @@ async function ClaimRewards( clients : IClientInfos, params: IAppParameters ) {
     console.log("No rewards could be listed");
     return;
   }
-
-  console.log("Rewards were claimed");
 }
 
-async function StakeBalance( clients : IClientInfos, params: IAppParameters ) {
+async function StakeBalance( config : IChainConfiguration, clients : IClientInfos, params: IAppParameters ) {
   //const foo = await clients.rpc.getAllBalances( clients.restAddress.toString());
   //console.log(JSON.stringify(foo));
   if( !params.stakeAvailableBalance ){
@@ -184,14 +197,14 @@ async function StakeBalance( clients : IClientInfos, params: IAppParameters ) {
     .then( res => res.data.delegation_responses );
   const orderedDelegations = delegations.sort( (a : any, b : any) => parseInt(a?.balance?.amount ?? "0") - parseInt(b?.balance?.amount ?? "0") );
   const validatorWithLeastStaked = orderedDelegations[0];
-  const currentAccountBalance = await clients.rpc.getBalance( clients.restAddress.toString(), params.tokenDenom);
+  const currentAccountBalance = await clients.rpc.getBalance( clients.restAddress.toString(), config.tokenDenom);
   const currentAccountBalanceValue = parseInt(currentAccountBalance?.amount ?? "0");
   if( currentAccountBalanceValue > params.leaveMinimumBalance * 2 )
   {
       console.log(`Balance high enough to stake: ${currentAccountBalanceValue / 1000000} / ${params.leaveMinimumBalance * 2 / 1000000}`);
       const balanceToStake = currentAccountBalanceValue - params.leaveMinimumBalance;
-      const delegateResult = await clients.rpc.delegateTokens(clients.restAddress.toString(), validatorWithLeastStaked.delegation?.validator_address, coin( balanceToStake.toString(), params.tokenDenom ), GenerateFee(params) );
-      console.log(`Successfully staked ${balanceToStake} ${params.tokenDenom}`);
+      const delegateResult = await clients.rpc.delegateTokens(clients.restAddress.toString(), validatorWithLeastStaked.delegation?.validator_address, coin( balanceToStake.toString(), config.tokenDenom ), GenerateFee(config) );
+      console.log(`Successfully staked ${balanceToStake} ${config.tokenDenom}`);
       // console.log(JSON.stringify(delegateResult));
   }
   else{
@@ -199,11 +212,11 @@ async function StakeBalance( clients : IClientInfos, params: IAppParameters ) {
   }
 }
 
-function GenerateFee( params : IAppParameters ){
+function GenerateFee( config : IChainConfiguration ){
   return {
     amount: [
       {
-        denom: params.tokenDenom,
+        denom: config.tokenDenom,
         amount: "7000",
       },
     ],

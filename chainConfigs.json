@@ -1,0 +1,42 @@
+[
+    {
+        "chainName" : "Osmosis",
+        "walletPrefix" : "osmo", 
+        "networkName" : "osmosis-1", 
+        "tokenDenom" : "uosmo",
+        "rpcEndpoint" : "https://rpc-osmosis.blockapsis.com", 
+        "restEndpoint" : "https://lcd-osmosis.blockapsis.com"
+    },
+    {
+        "chainName" : "Chihuahua",
+        "walletPrefix" : "chihuahua",
+        "networkName" : "chihuahua-1",
+        "tokenDenom" : "uhuahua",
+        "rpcEndpoint" : "https://rpc.chihuahua.wtf",
+        "restEndpoint" : "https://api.chihuahua.wtf"
+    },
+    {
+        "chainName" : "Stargaze",
+        "walletPrefix" : "stars",
+        "networkName" : "stargaze-1",
+        "tokenDenom" : "ustars",
+        "rpcEndpoint" : "https://rpc.stargaze-apis.com",
+        "restEndpoint" : "https://rest.stargaze-apis.com"
+    },
+    {
+        "chainName" : "Juno",
+        "walletPrefix" : "juno",
+        "networkName" : "juno-1",
+        "tokenDenom" : "ujuno",
+        "rpcEndpoint" : "https://rpc-juno.itastakers.com",
+        "restEndpoint" : "https://lcd-juno.itastakers.com"
+    },
+    {
+        "chainName" : "Lum",
+        "walletPrefix" : "lum",
+        "networkName" : "lum-network-1",
+        "tokenDenom" : "ulum",
+        "rpcEndpoint" : "https://node0.mainnet.lum.network/rpc",
+        "restEndpoint" : "https://node0.mainnet.lum.network/rest"
+    }
+]
