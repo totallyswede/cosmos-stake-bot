@@ -1,0 +1,13 @@
+[
+
+    {
+        "accountName" : "keplr",
+        "mnemonic" : "", 
+        "chainNames" : "Cosmos,Osmosis,Juno", 
+        "claimRewards" : false,
+        "stakeAvailableBalance" : false, 
+        "leaveMinimumBalance" : 0.1
+    }
+
+
+]

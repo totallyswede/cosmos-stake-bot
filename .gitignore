@@ -1,3 +1,9 @@
 node_modules/*
 *.test.ts
 *.log
+.DS_Store
+accountConfigs.json
+accountConfigs_test.json
+sample.ts
+yarn.lock
+yarn.lock
