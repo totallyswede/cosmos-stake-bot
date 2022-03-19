@@ -42,7 +42,7 @@ The available CLI paramaters are as follows:
 
 sample command:
 
-`ts-node index.ts --claimRewards=true --stakeAvailableBalance=true`
+`ts-node index.ts --claimRewards=false --stakeAvailableBalance=false`
 
 
 ### In Docker
