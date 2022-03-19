@@ -56,3 +56,8 @@ Push it
 `docker push myrepo.io/cosmos-stake-bot`
 
 Use the image in whatever means you find best for you. The Dockerfile assumes you will feed the application the information it needs via environment variables. 
+
+### TODO
+1. Figure out the correct endpoint url of secret network
+2. Suport goverance automation
+3. Batch trasaction from multiple accounts
