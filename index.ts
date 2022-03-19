@@ -109,6 +109,7 @@ async function main(){
     for( let accountConfig of accountConfigs ){
       // console.log(accountConfig.accountName);
       const chainNames = accountConfig.chainNames.split(',');
+      let index = 0;
       for( let chainName of chainNames ){
         const filteredConfigs = chainConfigs.filter( (c : IChainConfiguration) => c.chainName == chainName );
         if(filteredConfigs === undefined || filteredConfigs.length == 0)
@@ -127,22 +128,28 @@ async function main(){
           await ClaimRewards(config, clients, parameters, accountName);
 
         } else {
+          // console.log("start to query available balances.")
           await GetAllBalance(config, clients, parameters, accountConfig, accountName);
           // 查询多链staking 的balance
-          await GetStakingBalance(config, clients, parameters, accountConfig, accountName);
-
+          // console.log("start to query staking balances.")
+          if (index==0){
+            await GetStakingBalance(clients, accountName);
+          }
+          index++;
         }
 
 
         if (parameters.stakeAvailableBalance) {
           await StakeBalance(config, clients, parameters, accountName);
+
         }
-        // await StakeBalance(config, clients, parameters);
         
       }
+      index = 0;
     
     }
     if (!parameters.claimRewards) {
+
       //todo 输出balance的查询结果
       console.log(JSON.stringify(MapAccountInfo, null, 4));
     }
@@ -385,7 +392,7 @@ async function GetAllBalance( config : IChainConfiguration, clients : IClientInf
 }
 
 //todo 
-async function GetStakingBalance( config : IChainConfiguration, clients : IClientInfos, params: IAppParameters, accountConfig :IAccountConfiguration, accountName: string) {
+async function GetStakingBalance(clients : IClientInfos, accountName: string) {
   let stakeChain: IStakeChainInfo = {
     chainName: "",
     chainAddress: "",
