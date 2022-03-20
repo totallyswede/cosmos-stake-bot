@@ -15,8 +15,8 @@ The application supports the following chains:
 * Stargaze
 * Like
 * Desmos
-* Secret(To be enhanced, rpc endpoint can not be connected)
-
+* Secret
+* 
 If you want to deploy the application somewhere in a hosted environment like a public cloud, make sure you protect your secrets as best you can. Might be a good idea to deploy a separate wallet for the assets you want to restake. It's up to you. 
 
 ### From the command-line
@@ -42,7 +42,7 @@ The available CLI paramaters are as follows:
 
 sample command:
 
-`ts-node index.ts --claimRewards=true --stakeAvailableBalance=true`
+`ts-node index.ts --claimRewards=false --stakeAvailableBalance=false`
 
 
 ### In Docker
@@ -56,3 +56,7 @@ Push it
 `docker push myrepo.io/cosmos-stake-bot`
 
 Use the image in whatever means you find best for you. The Dockerfile assumes you will feed the application the information it needs via environment variables. 
+
+### TODO
+1. Suport goverance automation
+2. Batch trasaction from multiple accounts
