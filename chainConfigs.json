@@ -69,7 +69,7 @@
         "walletPrefix" : "secret",
         "networkName" : "secret network",
         "tokenDenom" : "uscrt",
-        "rpcEndpoint" : "https://api.scrt.network:26657",
-        "restEndpoint" : "http://api.scrt.network"
+        "rpcEndpoint" : "https://secret-4.api.trivium.network:26657/",
+        "restEndpoint" : "https://secret-4.api.trivium.network:1317/"
     }
 ]
