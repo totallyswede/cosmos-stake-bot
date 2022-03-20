@@ -15,8 +15,8 @@ The application supports the following chains:
 * Stargaze
 * Like
 * Desmos
-* Secret(To be enhanced, rpc endpoint can not be connected)
-
+* Secret
+* 
 If you want to deploy the application somewhere in a hosted environment like a public cloud, make sure you protect your secrets as best you can. Might be a good idea to deploy a separate wallet for the assets you want to restake. It's up to you. 
 
 ### From the command-line
@@ -58,6 +58,5 @@ Push it
 Use the image in whatever means you find best for you. The Dockerfile assumes you will feed the application the information it needs via environment variables. 
 
 ### TODO
-1. Figure out the correct endpoint url of secret network
-2. Suport goverance automation
-3. Batch trasaction from multiple accounts
+1. Suport goverance automation
+2. Batch trasaction from multiple accounts
