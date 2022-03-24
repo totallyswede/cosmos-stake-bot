@@ -16,7 +16,7 @@ The application supports the following chains:
 * Like
 * Desmos
 * Secret
-* 
+
 If you want to deploy the application somewhere in a hosted environment like a public cloud, make sure you protect your secrets as best you can. Might be a good idea to deploy a separate wallet for the assets you want to restake. It's up to you. 
 
 ### From the command-line
@@ -40,16 +40,16 @@ The available CLI paramaters are as follows:
   * Corresponding environment variable: `STAKEBOT_LEAVE_MINIMUM_BALANCE`
 
 
-# sample command:
+## sample command:
 
-## query available balances and staking balances from configured accounts in accountConfig.json
+query available balances and staking balances from configured accounts in `accountConfig.json`
 
 `ts-node index.ts --claimRewards=false --stakeAvailableBalance=false`
 
-## claim all rewareds
+claim all rewareds
 
 `ts-node index.ts --claimRewards=true --stakeAvailableBalance=false`
 
-## batch transfer,use batchConfig.json to support many to one and one to many transfer. Use accountName to link the account configurations in accountConfigs.json
+batch transfer,use batchConfig.json to support many to one and one to many transfer. Use accountName to link the account configurations in `accountConfigs.json`.
 
 `ts-node batchTransfer.ts`
