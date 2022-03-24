@@ -40,23 +40,16 @@ The available CLI paramaters are as follows:
   * Corresponding environment variable: `STAKEBOT_LEAVE_MINIMUM_BALANCE`
 
 
-sample command:
+# sample command:
+
+## query available balances and staking balances from configured accounts in accountConfig.json
 
 `ts-node index.ts --claimRewards=false --stakeAvailableBalance=false`
 
+## claim all rewareds
 
-### In Docker
+`ts-node index.ts --claimRewards=true --stakeAvailableBalance=false`
 
-Build the docker image: 
+## batch transfer,use batchConfig.json to support many to one and one to many transfer. Use accountName to link the account configurations in accountConfigs.json
 
-`docker build . -t myrepo.io/cosmos-stake-bot`
-
-Push it
-
-`docker push myrepo.io/cosmos-stake-bot`
-
-Use the image in whatever means you find best for you. The Dockerfile assumes you will feed the application the information it needs via environment variables. 
-
-### TODO
-1. Suport goverance automation
-2. Batch trasaction from multiple accounts
+`ts-node batchTransfer.ts`

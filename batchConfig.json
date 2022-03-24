@@ -1,0 +1,20 @@
+{
+    "many2one":
+        {
+            "enable" : false,
+            "chain" : "Osmosis", 
+            "destAddress" : "osmoaddress", 
+            "transferToken" : "uosmo",
+            "transferAmount" : 0, 
+            "leftMinAmount" : 0.01
+        },
+    "one2many":
+        {
+            "enable" : false,
+            "chain" : "Cosmos", 
+            "sourceAccountName": "keplr1",
+            "destAccountNames" : "bravekeplr1", 
+            "transferToken" : "uatom",
+            "transferAmount" : 2
+        }
+}
