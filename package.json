@@ -22,7 +22,15 @@
     "@types/node": "^10.12.18",
     "cosmos-client": "https://gitpkg.now.sh/totallyswede/cosmos-client-ts/dist?main",
     "minimist": "^1.2.5",
-    "ts-node-dev": "^1.1.8"
+    "ts-node-dev": "^1.1.8",
+    "@cosmjs/amino": "^0.27.1",
+    "@cosmjs/crypto": "^0.27.1",
+    "@cosmjs/encoding": "^0.27.1",
+    "@cosmjs/launchpad": "^0.27.1",
+    "@cosmjs/tendermint-rpc": "^0.27.1",
+    "@tendermint/amino-js": "^0.6.2",
+    "axios": "^0.26.1",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.12",

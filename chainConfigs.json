@@ -4,6 +4,8 @@
         "walletPrefix" : "cosmos", 
         "networkName" : "cosmoshub-4", 
         "tokenDenom" : "uatom",
+        "min_tx_fee": "800",
+        "gas":120000,
         "rpcEndpoint" : "https://cosmoshub.validator.network", 
         "restEndpoint" : "https://api.cosmos.network"
     },
@@ -12,6 +14,8 @@
         "walletPrefix" : "osmo", 
         "networkName" : "osmosis-1", 
         "tokenDenom" : "uosmo",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://rpc-osmosis.blockapsis.com", 
         "restEndpoint" : "https://lcd-osmosis.blockapsis.com"
     },
@@ -20,6 +24,8 @@
         "walletPrefix" : "chihuahua",
         "networkName" : "chihuahua-1",
         "tokenDenom" : "uhuahua",
+        "min_tx_fee": "4000",
+        "gas":80000,
         "rpcEndpoint" : "https://rpc.chihuahua.wtf",
         "restEndpoint" : "https://api.chihuahua.wtf"
     },
@@ -28,6 +34,8 @@
         "walletPrefix" : "stars",
         "networkName" : "stargaze-1",
         "tokenDenom" : "ustars",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://rpc.stargaze-apis.com",
         "restEndpoint" : "https://rest.stargaze-apis.com"
     },
@@ -36,6 +44,8 @@
         "walletPrefix" : "juno",
         "networkName" : "juno-1",
         "tokenDenom" : "ujuno",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://rpc-juno.itastakers.com",
         "restEndpoint" : "https://lcd-juno.itastakers.com"
     },
@@ -44,6 +54,8 @@
         "walletPrefix" : "lum",
         "networkName" : "lum-network-1",
         "tokenDenom" : "ulum",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://node0.mainnet.lum.network/rpc",
         "restEndpoint" : "https://node0.mainnet.lum.network/rest"
     },
@@ -52,6 +64,8 @@
         "walletPrefix" : "cosmos",
         "networkName" : "likecoin-mainnet-2",
         "tokenDenom" : "ulike",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://mainnet-node.like.co/rpc",
         "restEndpoint" : "https://mainnet-node.like.co"
     },
@@ -60,6 +74,8 @@
         "walletPrefix" : "desmos",
         "networkName" : "desmos-mainnet",
         "tokenDenom" : "udsm",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://rpc.mainnet.desmos.network",
         "restEndpoint" : "https://api.mainnet.desmos.network",
         "customDerivationPath" : "m/44'/852'/0'/0/0"
@@ -69,6 +85,8 @@
         "walletPrefix" : "secret",
         "networkName" : "secret network",
         "tokenDenom" : "uscrt",
+        "min_tx_fee": "800",
+        "gas":200000,
         "rpcEndpoint" : "https://secret-4.api.trivium.network:26657/",
         "restEndpoint" : "https://secret-4.api.trivium.network:1317/"
     }

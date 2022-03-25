@@ -73,6 +73,10 @@ const tokenMap = require('./tokenMap.json') as Record<string, string>;
 
 const MIN_REWARD_AMOUNT = 200000
 
+const TokenStakeAmounts : Record<string, number> = {};
+
+const TokenAvailableAmounts : Record<string, number> = {};
+
 interface IAppParameters{
   _ : any[],
   // chainNames : string,
@@ -132,9 +136,9 @@ async function main(){
           await GetAllBalance(config, clients, parameters, accountConfig, accountName);
           // 查询多链staking 的balance
           // console.log("start to query staking balances.")
-          if (index==0){
-            await GetStakingBalance(clients, accountName);
-          }
+          // if (index==0){
+          await GetStakingBalance(clients, accountName);
+          // }
           index++;
         }
 
@@ -152,6 +156,8 @@ async function main(){
 
       //todo 输出balance的查询结果
       console.log(JSON.stringify(MapAccountInfo, null, 4));
+      console.log(TokenAvailableAmounts);
+      console.log(TokenStakeAmounts);
     }
     
   } catch( error : any ) {
@@ -160,7 +166,6 @@ async function main(){
     else
       console.error( error );
   }
-
 }
 
 function setFromFromEnv( args: any, memberName: string, varName: string ){
@@ -378,8 +383,11 @@ async function GetAllBalance( config : IChainConfiguration, clients : IClientInf
         amount: convertAmount(coin.amount)
       };
       accountChain.tokens.push(tokenInfo);
+      TokenAvailableAmounts[accountName + "_" + config.chainName + "_" + convertToken(coin.denom)] = convertAmount(coin.amount);
+
     }
     MapAccountInfo[accountName].accountInfo.push(accountChain)
+
   }
 
 
@@ -416,6 +424,8 @@ async function GetStakingBalance(clients : IClientInfos, accountName: string) {
       token: token
     };
     MapAccountInfo[accountName].accountStakeInfo.push(stakeChain)
+    TokenStakeAmounts[accountName + "_" + convertToken(item.balance.denom)] = convertAmount(item.balance.amount);
+
     // aryStakeChains.push(stakeChain)
 
   }

@@ -53,3 +53,7 @@ claim all rewareds
 batch transfer,use batchConfig.json to support many to one and one to many transfer. Use accountName to link the account configurations in `accountConfigs.json`.
 
 `ts-node batchTransfer.ts`
+
+Vote for all available governace proposals.
+
+`ts-node vote.ts`

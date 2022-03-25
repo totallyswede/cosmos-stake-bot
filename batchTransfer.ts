@@ -1,4 +1,4 @@
-import { E6, IChainConfiguration, GenerateFee } from "./common";
+import { E6, IAccountConfiguration, IChainConfiguration, GenerateFee } from "./common";
 
 
 import { DirectSecp256k1HdWallet, Registry } from "@cosmjs/proto-signing";
@@ -30,14 +30,14 @@ let minimist = require('minimist')
 //   customDerivationPath? : string
 // }
 
-interface IAccountConfiguration{
-  accountName : string,
-  mnemonic : string,
-  chainNames : string,
-  claimRewards : boolean,
-  stakeAvailableBalance : boolean,
-  leaveMinimumBalance : Decimal
-}
+// interface IAccountConfiguration{
+//   accountName : string,
+//   mnemonic : string,
+//   chainNames : string,
+//   claimRewards : boolean,
+//   stakeAvailableBalance : boolean,
+//   leaveMinimumBalance : Decimal
+// }
 
 //保存各个账户的返回信息
 interface IBatchConfig{
